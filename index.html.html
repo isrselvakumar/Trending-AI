@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ISR AI STUDIO — AI Trends Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+/* ══════════════════════════════════════════════
+   CSS VARIABLES — LIGHT & DARK
+══════════════════════════════════════════════ */
+:root {
+  --c1: #ff6b6b; --c2: #ffd93d; --c3: #6bcb77; --c4: #4d96ff;
+  --c5: #c77dff; --c6: #ff9a3c; --c7: #00f5d4;
+  --grad1: linear-gradient(135deg,#ff6b6b,#ffd93d);
+  --grad2: linear-gradient(135deg,#4d96ff,#c77dff);
+  --grad3: linear-gradient(135deg,#6bcb77,#00f5d4);
+  --grad4: linear-gradient(135deg,#ff9a3c,#ff6b6b);
+  --grad5: linear-gradient(135deg,#c77dff,#4d96ff);
+  --ticker-speed: 40s;
+}
+[data-theme="dark"] {
+  --bg: #0d0d0f; --bg2: #16161a; --bg3: #1e1e24;
+  --surface: #1e1e24; --surface2: #26262e; --surface3: #2e2e38;
+  --border: rgba(255,255,255,0.08);
+  --text: #f0f0f5; --text2: #a0a0b0; --text3: #606070;
+  --card-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  --glow: 0 0 40px rgba(77,150,255,0.2);
+}
+[data-theme="light"] {
+  --bg: #f8f7ff; --bg2: #ffffff; --bg3: #eef0ff;
+  --surface: #ffffff; --surface2: #f0f0f8; --surface3: #e8e8f8;
+  --border: rgba(0,0,0,0.08);
+  --text: #12121a; --text2: #50506a; --text3: #9090a8;
+  --card-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  --glow: 0 0 40px rgba(77,150,255,0.1);
+}
+
+/* ══════════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+  overflow-x: hidden;
+}
+button { cursor: pointer; font-family: inherit; border: none; }
+input, textarea { font-family: inherit; }
+a { text-decoration: none; color: inherit; }
+img { max-width: 100%; }
+
+/* ══════════════════════════════════════════════
+   NOISE OVERLAY
+══════════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; opacity: 0.4;
+}
+
+/* ══════════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--c4); border-radius: 3px; }
+
+/* ══════════════════════════════════════════════
+   NEWS TICKER
+══════════════════════════════════════════════ */
+.ticker-wrap {
+  background: linear-gradient(90deg, var(--c1), var(--c4), var(--c5));
+  padding: 0; overflow: hidden; height: 34px;
+  display: flex; align-items: center; position: relative; z-index: 100;
+}
+.ticker-label {
+  background: #000; color: #fff;
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 800;
+  letter-spacing: 0.12em; padding: 0 14px; height: 100%;
+  display: flex; align-items: center; white-space: nowrap; flex-shrink: 0;
+  text-transform: uppercase;
+}
+.ticker-inner { overflow: hidden; flex: 1; }
+.ticker-track {
+  display: flex; gap: 48px; align-items: center; height: 34px;
+  animation: ticker var(--ticker-speed) linear infinite;
+  white-space: nowrap;
+}
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item {
+  font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+}
+.ticker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c2); flex-shrink: 0; }
+@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+/* ══════════════════════════════════════════════
+   TOP NAV
+══════════════════════════════════════════════ */
+.topnav {
+  position: sticky; top: 0; z-index: 99;
+  background: rgba(13,13,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  height: 64px; display: flex; align-items: center;
+  padding: 0 20px; gap: 12px;
+  transition: background 0.3s;
+}
+[data-theme="light"] .topnav { background: rgba(248,247,255,0.9); }
+.nav-logo {
+  display: flex; align-items: center; gap: 10px; margin-right: 8px;
+}
+.nav-logo-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--grad2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900; color: #fff;
+  font-family: 'Syne', sans-serif;
+  flex-shrink: 0;
+}
+.nav-logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; line-height: 1.1; }
+.nav-logo-sub { font-size: 9px; font-weight: 600; letter-spacing: 0.15em; color: var(--text2); text-transform: uppercase; }
+.nav-links { display: flex; gap: 2px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+.nav-links::-webkit-scrollbar { display: none; }
+.nav-btn {
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  background: transparent; color: var(--text2);
+  transition: all 0.2s; white-space: nowrap;
+}
+.nav-btn:hover, .nav-btn.active {
+  background: var(--surface2); color: var(--text);
+}
+.nav-btn.active { background: var(--grad2); color: #fff; }
+.nav-actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--surface2); display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: all 0.2s; color: var(--text);
+}
+.icon-btn:hover { background: var(--surface3); transform: scale(1.05); }
+
+/* ══════════════════════════════════════════════
+   PAGE SYSTEM
+══════════════════════════════════════════════ */
+.page { display: none; min-height: calc(100vh - 98px); position: relative; z-index: 1; }
+.page.active { display: block; }
+
+/* ══════════════════════════════════════════════
+   SECTION WRAPPER
+══════════════════════════════════════════════ */
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+/* ══════════════════════════════════════════════
+   HERO
+══════════════════════════════════════════════ */
+.hero {
+  padding: 56px 20px 40px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.hero-orb {
+  position: absolute; border-radius: 50%; filter: blur(80px);
+  pointer-events: none;
+}
+.hero-orb-1 { width: 500px; height: 500px; background: rgba(77,150,255,0.15); top: -100px; left: -100px; }
+.hero-orb-2 { width: 400px; height: 400px; background: rgba(199,125,255,0.12); top: -50px; right: -80px; }
+.hero-orb-3 { width: 300px; height: 300px; background: rgba(107,203,119,0.1); bottom: -80px; left: 30%; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 14px; margin-bottom: 20px;
+  font-size: 12px; font-weight: 600; color: var(--text2);
+}
+.hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c3); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+.hero h1 {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(32px, 5.5vw, 64px);
+  line-height: 1.05; margin-bottom: 16px; position: relative;
+}
+.hero h1 .grad {
+  background: var(--grad1); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero h1 .grad2 {
+  background: var(--grad2); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-sub { font-size: 16px; color: var(--text2); max-width: 500px; margin: 0 auto 28px; line-height: 1.7; }
+.hero-ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ══════════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════════ */
+.btn {
+  padding: 11px 24px; border-radius: 50px; font-size: 14px;
+  font-weight: 700; transition: all 0.2s; display: inline-flex;
+  align-items: center; gap: 7px;
+}
+.btn-primary { background: var(--grad2); color: #fff; box-shadow: 0 4px 20px rgba(77,150,255,0.35); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(77,150,255,0.5); }
+.btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--surface3); transform: translateY(-2px); }
+.btn-sm { padding: 7px 16px; font-size: 12px; }
+.btn-icon { padding: 9px 18px; }
+
+/* ══════════════════════════════════════════════
+   SECTION TITLES
+══════════════════════════════════════════════ */
+.section { padding: 40px 0; }
+.section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.section-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(20px, 2.5vw, 28px); display: flex; align-items: center; gap: 10px;
+}
+.section-tag {
+  display: inline-block; padding: 2px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.tag-blue { background: rgba(77,150,255,0.15); color: var(--c4); }
+.tag-pink { background: rgba(255,107,107,0.15); color: var(--c1); }
+.tag-green { background: rgba(107,203,119,0.15); color: var(--c3); }
+.tag-purple { background: rgba(199,125,255,0.15); color: var(--c5); }
+.tag-orange { background: rgba(255,154,60,0.15); color: var(--c6); }
+.tag-cyan { background: rgba(0,245,212,0.15); color: var(--c7); }
+
+/* ══════════════════════════════════════════════
+   SEARCH BAR
+══════════════════════════════════════════════ */
+.search-bar {
+  display: flex; gap: 10px; margin-bottom: 28px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 8px 8px 8px 18px;
+  transition: border-color 0.2s; align-items: center;
+}
+.search-bar:focus-within { border-color: var(--c4); }
+.search-bar input {
+  flex: 1; background: transparent; border: none; outline: none;
+  font-size: 15px; color: var(--text); font-weight: 500;
+}
+.search-bar input::placeholder { color: var(--text3); }
+
+/* ══════════════════════════════════════════════
+   TREND LIST (TOP 10)
+══════════════════════════════════════════════ */
+.trend-list { display: flex; flex-direction: column; gap: 10px; }
+.trend-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
+}
+.trend-item::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px; border-radius: 0 3px 3px 0;
+  background: var(--grad2); transform: scaleY(0);
+  transition: transform 0.25s; transform-origin: top;
+}
+.trend-item:hover::before { transform: scaleY(1); }
+.trend-item:hover { transform: translateX(6px); border-color: rgba(77,150,255,0.3); }
+.trend-rank {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+  min-width: 42px; text-align: center;
+  background: var(--grad2); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+.trend-info { flex: 1; }
+.trend-name { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
+.trend-meta { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.heat-bar { height: 5px; border-radius: 3px; background: var(--grad1); min-width: 40px; }
+.trend-actions { display: flex; gap: 6px; align-items: center; }
+.act-btn {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--surface2); color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: all 0.2s;
+}
+.act-btn:hover { background: var(--surface3); color: var(--text); }
+.act-btn.bookmarked { color: var(--c2); background: rgba(255,217,61,0.15); }
+
+/* ══════════════════════════════════════════════
+   AI GENERATE PANEL
+══════════════════════════════════════════════ */
+.gen-panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 28px; margin-bottom: 32px;
+}
+.gen-options { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+.gen-opt {
+  padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  background: var(--surface2); color: var(--text2); border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.gen-opt:hover, .gen-opt.active {
+  background: var(--grad2); color: #fff; border-color: transparent;
+}
+.gen-textarea {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px 18px; font-size: 14px; color: var(--text);
+  resize: none; outline: none; transition: border-color 0.2s; min-height: 80px;
+  margin-bottom: 14px;
+}
+.gen-textarea:focus { border-color: var(--c4); }
+.gen-result {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px; margin-top: 20px;
+  display: none; animation: fadeIn 0.4s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.gen-result.show { display: block; }
+.typing { display: inline-block; }
+.typing::after {
+  content: '▋'; animation: blink 1s infinite;
+  color: var(--c4); margin-left: 2px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ══════════════════════════════════════════════
+   AI TREND MAP
+══════════════════════════════════════════════ */
+.map-container {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 24px; overflow: hidden; position: relative;
+}
+.map-canvas-wrap { position: relative; }
+#mapCanvas { width: 100%; border-radius: 14px; display: block; }
+.map-legend {
+  display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px;
+}
+.map-legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600;
+}
+.map-dot { width: 10px; height: 10px; border-radius: 50%; }
+.map-overlay-nodes {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════
+   ROLE CARDS (Fresher / Developer)
+══════════════════════════════════════════════ */
+.role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media(max-width:680px) { .role-grid { grid-template-columns: 1fr; } }
+.role-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 24px; overflow: hidden; position: relative;
+}
+.role-card-head {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+}
+.role-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 24px;
+}
+.role-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+.role-sub { font-size: 12px; color: var(--text2); }
+.role-trend-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.role-trend-item:last-child { border-bottom: none; }
+.role-num {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; flex-shrink: 0;
+}
+.role-trend-name { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.role-trend-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+/* ══════════════════════════════════════════════
+   TREND CARDS WITH IMAGES
+══════════════════════════════════════════════ */
+.trend-cards-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 20px; }
+.trend-img-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; overflow: hidden; position: relative;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.trend-img-card:hover { transform: translateY(-6px); box-shadow: var(--glow); }
+.card-img-wrap { position: relative; height: 180px; overflow: hidden; }
+.card-img-wrap canvas { width: 100%; height: 100%; display: block; }
+.card-watermark {
+  position: absolute; bottom: 10px; right: 10px;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+  color: #fff; font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 10px; letter-spacing: 0.15em; padding: 4px 9px;
+  border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);
+}
+.card-body { padding: 18px; }
+.card-title-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; margin-bottom: 8px; }
+.card-desc { font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 14px; }
+.card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ══════════════════════════════════════════════
+   SHARE / DOWNLOAD BAR
+══════════════════════════════════════════════ */
+.share-bar {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 18px;
+  margin-bottom: 24px; align-items: center;
+}
+.share-bar-label { font-size: 13px; font-weight: 700; color: var(--text2); margin-right: 6px; }
+.share-chip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 15px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  transition: all 0.2s;
+}
+.share-chip:hover { transform: scale(1.05); }
+.chip-wa { background: rgba(37,211,102,0.15); color: #25d366; }
+.chip-tw { background: rgba(29,161,242,0.15); color: #1da1f2; }
+.chip-li { background: rgba(0,119,181,0.15); color: #0077b5; }
+.chip-dl { background: var(--grad2); color: #fff; }
+.chip-cp { background: var(--surface2); color: var(--text); }
+
+/* ══════════════════════════════════════════════
+   NEWS PANEL
+══════════════════════════════════════════════ */
+.news-grid { display: flex; flex-direction: column; gap: 12px; }
+.news-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px 18px;
+  display: flex; gap: 14px; align-items: flex-start;
+  transition: all 0.2s; cursor: pointer;
+}
+.news-item:hover { border-color: rgba(77,150,255,0.4); transform: translateX(4px); }
+.news-badge-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+.news-content { flex: 1; }
+.news-title { font-weight: 700; font-size: 14px; margin-bottom: 5px; line-height: 1.5; }
+.news-meta { font-size: 11px; color: var(--text3); display: flex; gap: 10px; }
+.live-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,107,107,0.15); color: var(--c1);
+  border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 700;
+}
+.live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c1); animation: pulse 1s infinite; }
+.news-error {
+  background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3);
+  border-radius: 14px; padding: 24px; text-align: center; color: var(--c1);
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════
+   BOOKMARKS
+══════════════════════════════════════════════ */
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--text3);
+}
+.empty-icon { font-size: 52px; margin-bottom: 14px; }
+.empty-text { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.empty-sub { font-size: 13px; }
+
+/* ══════════════════════════════════════════════
+   STATIC PAGES (Studio / For Whom / Disclaimer)
+══════════════════════════════════════════════ */
+.static-page { max-width: 780px; margin: 0 auto; padding: 48px 20px; }
+.static-page h1 {
+  font-family: 'Syne', sans-serif; font-size: clamp(28px, 4vw, 44px); font-weight: 800;
+  margin-bottom: 12px; line-height: 1.1;
+}
+.static-page .lead { font-size: 17px; color: var(--text2); line-height: 1.8; margin-bottom: 32px; }
+.static-page h2 {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700;
+  margin: 32px 0 12px;
+}
+.static-page p { color: var(--text2); line-height: 1.9; margin-bottom: 16px; font-size: 15px; }
+.studio-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 32px; margin: 28px 0;
+  position: relative; overflow: hidden;
+}
+.studio-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--grad2);
+}
+.studio-founder {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+}
+.founder-avatar {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--grad2); display: flex; align-items: center;
+  justify-content: center; font-family: 'Syne', sans-serif;
+  font-size: 28px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.founder-name { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+.founder-role { font-size: 14px; color: var(--text2); margin-top: 3px; }
+.founder-company {
+  font-size: 13px; font-weight: 700; color: var(--c4); margin-top: 5px;
+  display: flex; align-items: center; gap: 5px;
+}
+.for-whom-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
+.for-whom-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 22px; text-align: center; transition: all 0.25s;
+}
+.for-whom-card:hover { transform: translateY(-4px); border-color: rgba(77,150,255,0.4); }
+.fw-icon { font-size: 36px; margin-bottom: 12px; }
+.fw-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 16px; margin-bottom: 6px; }
+.fw-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+.disclaimer-box {
+  background: rgba(255,107,107,0.08); border: 1px solid rgba(255,107,107,0.25);
+  border-radius: 16px; padding: 20px; margin: 20px 0;
+}
+
+/* ══════════════════════════════════════════════
+   MOBILE BOTTOM NAV
+══════════════════════════════════════════════ */
+.bottom-nav {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: var(--bg2); border-top: 1px solid var(--border);
+  padding: 10px 0 16px; backdrop-filter: blur(20px);
+}
+.bottom-nav-inner { display: flex; justify-content: space-around; align-items: center; }
+.bnav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 4px 8px; border-radius: 10px; background: transparent;
+  color: var(--text3); font-size: 10px; font-weight: 600;
+  transition: all 0.2s; min-width: 50px;
+}
+.bnav-btn .bnav-icon { font-size: 20px; }
+.bnav-btn.active { color: var(--c4); }
+@media(max-width:700px) {
+  .bottom-nav { display: block; }
+  .nav-links { display: none; }
+  .page { padding-bottom: 80px; }
+}
+
+/* ══════════════════════════════════════════════
+   LOADING SPINNER
+══════════════════════════════════════════════ */
+.spinner {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--c4);
+  animation: spin 0.8s linear infinite; margin: 20px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+#toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface3); color: var(--text); border: 1px solid var(--border);
+  border-radius: 50px; padding: 10px 22px; font-size: 13px; font-weight: 600;
+  z-index: 999; opacity: 0; transition: all 0.3s; white-space: nowrap;
+  pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ══════════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════════ */
+.site-footer {
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 32px 20px; text-align: center; position: relative; z-index: 1;
+}
+.footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; margin-bottom: 6px; }
+.footer-sub { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+.footer-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.footer-link { font-size: 13px; color: var(--text2); font-weight: 600; cursor: pointer; }
+.footer-link:hover { color: var(--c4); }
+.footer-copy { font-size: 12px; color: var(--text3); }
+
+/* ══════════════════════════════════════════════
+   MISC UTILITIES
+══════════════════════════════════════════════ */
+.flex { display: flex; }
+.flex-c { display: flex; flex-direction: column; }
+.gap-8 { gap: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.hidden { display: none !important; }
+.text-grad {
+  background: var(--grad2); -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* HEAT BADGES */
+.heat-badge {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+  padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;
+}
+
+/* PULSE RING */
+.pulse-ring {
+  display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+  position: relative;
+}
+.pulse-ring::after {
+  content: ''; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid currentColor; opacity: 0;
+  animation: ring 2s infinite;
+}
+@keyframes ring { 0%{opacity:0.8;transform:scale(1)} 100%{opacity:0;transform:scale(2)} }
+</style>
+</head>
+<body>
+
+<!-- NEWS TICKER -->
+<div class="ticker-wrap" id="tickerWrap">
+  <div class="ticker-label">🔴 AI LIVE</div>
+  <div class="ticker-inner">
+    <div class="ticker-track" id="tickerTrack">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">ISR</div>
+    <div>
+      <div class="nav-logo-text">ISR AI STUDIO</div>
+      <div class="nav-logo-sub">by ISR Ventures</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="goPage('home')">🏠 Home</button>
+    <button class="nav-btn" onclick="goPage('trends')">📊 Trends</button>
+    <button class="nav-btn" onclick="goPage('generate')">✨ Generate</button>
+    <button class="nav-btn" onclick="goPage('map')">🗺️ Map</button>
+    <button class="nav-btn" onclick="goPage('roles')">🎯 For You</button>
+    <button class="nav-btn" onclick="goPage('cards')">🃏 Cards</button>
+    <button class="nav-btn" onclick="goPage('news')">📰 News</button>
+    <button class="nav-btn" onclick="goPage('bookmarks')">🔖 Saved</button>
+    <button class="nav-btn" onclick="goPage('studio')">🏢 Studio</button>
+    <button class="nav-btn" onclick="goPage('forwhom')">👥 For Whom</button>
+    <button class="nav-btn" onclick="goPage('disclaimer')">⚠️ Disclaimer</button>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">🌙</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════
+  PAGE: HOME
+════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+    <div class="hero-badge"><span class="dot"></span> AI Trends — Updated Daily</div>
+    <h1>Discover What's<br><span class="grad">Hot in AI</span> <span class="grad2">Right Now</span></h1>
+    <p class="hero-sub">Your one-stop hub for top AI trends, role-based insights, live news, and AI-generated content — powered by ISR AI STUDIO.</p>
+    <div class="hero-ctas">
+      <button class="btn btn-primary" onclick="goPage('trends')">🔥 Explore Trends</button>
+      <button class="btn btn-ghost" onclick="goPage('generate')">✨ AI Generate</button>
+    </div>
+  </div>
+
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="section-title">🔥 Quick Highlights <span class="section-tag tag-pink">TOP PICKS</span></div>
+    </div>
+    <div class="trend-list" id="homeTrendList"></div>
+    <div style="text-align:center;margin-top:20px">
+      <button class="btn btn-ghost" onclick="goPage('trends')">View All 10 Trends →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: TRENDS
+════════════════════════════════════ -->
+<div class="page" id="page-trends">
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="section-title">📊 Top 10 AI Trends <span class="section-tag tag-blue">2025–26</span></div>
+      <div class="live-badge"><span class="dot"></span> Curated</div>
+    </div>
+
+    <div class="share-bar">
+      <span class="share-bar-label">Share List:</span>
+      <button class="share-chip chip-wa" onclick="shareTo('whatsapp','Top 10 AI Trends')">💬 WhatsApp</button>
+      <button class="share-chip chip-tw" onclick="shareTo('twitter','Top 10 AI Trends')">🐦 Twitter</button>
+      <button class="share-chip chip-li" onclick="shareTo('linkedin','Top 10 AI Trends')">💼 LinkedIn</button>
+      <button class="share-chip chip-cp" onclick="copyContent('trendListCopy')">📋 Copy</button>
+    </div>
+
+    <div class="search-bar">
+      <span style="font-size:18px">🔍</span>
+      <input type="text" placeholder="Search AI trends…" id="trendSearch" oninput="filterTrends()"/>
+      <button class="btn btn-sm btn-primary" onclick="filterTrends()">Search</button>
+    </div>
+
+    <div class="trend-list" id="fullTrendList"></div>
+    <div id="trendListCopy" class="hidden"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: GENERATE
+════════════════════════════════════ -->
+<div class="page" id="page-generate">
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="section-title">✨ AI Trend Generator <span class="section-tag tag-purple">POWERED BY CLAUDE</span></div>
+    </div>
+
+    <div class="gen-panel">
+      <p style="color:var(--text2);font-size:14px;margin-bottom:14px">Describe your interest or topic and let AI generate a personalized trend report for you.</p>
+      <div class="gen-options">
+        <button class="gen-opt active" data-tone="Beginner">🌱 Beginner</button>
+        <button class="gen-opt" data-tone="Developer">💻 Developer</button>
+        <button class="gen-opt" data-tone="Expert">🧠 Expert</button>
+        <button class="gen-opt" data-tone="Tweet">🐦 Tweet-size</button>
+        <button class="gen-opt" data-tone="Blog">📝 Blog-style</button>
+      </div>
+      <textarea class="gen-textarea" id="genInput" rows="3"
+        placeholder="e.g. 'What AI trends should I follow as a fresh graduate in 2025?' or 'Top AI tools for Python developers'…"></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="generateTrend()">✨ Generate Trends</button>
+        <button class="btn btn-ghost" onclick="clearGen()">🗑️ Clear</button>
+      </div>
+
+      <div class="gen-result" id="genResult">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800">✨ Generated Result</div>
+          <div style="display:flex;gap:8px">
+            <button class="share-chip chip-cp btn-sm" onclick="copyContent('genOutput')">📋 Copy</button>
+            <button class="share-chip chip-dl btn-sm" onclick="downloadTxt('genOutput','ai-trend-report')">⬇️ Download</button>
+            <button class="share-chip chip-wa btn-sm" onclick="shareGenResult()">💬 Share</button>
+          </div>
+        </div>
+        <div id="genOutput" style="font-size:14px;color:var(--text2);line-height:1.9;white-space:pre-wrap"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: MAP
+════════════════════════════════════ -->
+<div class="page" id="page-map">
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="section-title">🗺️ AI Trend Map <span class="section-tag tag-cyan">ANIMATED</span></div>
+    </div>
+    <div class="map-container">
+      <div class="map-canvas-wrap">
+        <canvas id="mapCanvas" height="400"></canvas>
+      </div>
+      <div class="map-legend">
+        <div class="map-legend-item"><div class="map-dot" style="background:#ff6b6b"></div> US / Americas — Generative AI</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#4d96ff"></div> Europe — AI Regulation & Ethics</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#ffd93d"></div> India — AI for All / Vernacular AI</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#6bcb77"></div> China / Asia — Industrial AI</div>
+        <div class="map-legend-item"><div class="map-dot" style="background:#c77dff"></div> Middle East — AI Infrastructure</div>
+      </div>
+    </div>
+    <div class="gen-result show mt-24">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;margin-bottom:12px">📍 Region Insights</div>
+      <div id="mapInsights" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: ROLES
+════════════════════════════════════ -->
+<div class="page" id="page-roles">
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="section-title">🎯 Trends For You <span class="section-tag tag-green">ROLE-BASED</span></div>
+    </div>
+    <div class="role-grid" id="roleGrid"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: CARDS
+════════════════════════════════════ -->
+<div class="page" id="page-cards">
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="section-title">🃏 Trend Cards <span class="section-tag tag-orange">ISR BRANDED</span></div>
+    </div>
+    <div class="share-bar">
+      <span class="share-bar-label">All Cards:</span>
+      <button class="share-chip chip-dl" onclick="downloadAllCards()">⬇️ Download All</button>
+      <button class="share-chip chip-wa" onclick="shareTo('whatsapp','Top AI Trend Cards')">💬 WhatsApp</button>
+      <button class="share-chip chip-cp" onclick="copyContent('cardsCopy')">📋 Copy Text</button>
+    </div>
+    <div class="trend-cards-grid" id="trendCardsGrid"></div>
+    <div id="cardsCopy" class="hidden"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: NEWS
+════════════════════════════════════ -->
+<div class="page" id="page-news">
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="section-title">📰 Live AI News <span class="section-tag tag-pink">24H</span></div>
+      <div class="flex gap-8">
+        <div class="live-badge"><span class="dot"></span> Live Feed</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadNews()">🔄 Refresh</button>
+      </div>
+    </div>
+    <div id="newsContainer"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: BOOKMARKS
+════════════════════════════════════ -->
+<div class="page" id="page-bookmarks">
+  <div class="wrap section">
+    <div class="section-head">
+      <div class="section-title">🔖 Saved Trends <span class="section-tag tag-blue">BOOKMARKS</span></div>
+    </div>
+    <div class="share-bar">
+      <span class="share-bar-label">Saved:</span>
+      <button class="share-chip chip-cp" onclick="copyBookmarks()">📋 Copy All</button>
+      <button class="share-chip chip-dl" onclick="downloadBookmarks()">⬇️ Download</button>
+      <button class="share-chip chip-wa" onclick="shareBookmarks()">💬 Share</button>
+    </div>
+    <div id="bookmarksList"></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: STUDIO
+════════════════════════════════════ -->
+<div class="page" id="page-studio">
+  <div class="static-page">
+    <div class="section-tag tag-blue" style="margin-bottom:14px">ISR VENTURES WING</div>
+    <h1>ISR AI <span class="text-grad">STUDIO</span></h1>
+    <p class="lead">A cutting-edge AI intelligence studio dedicated to democratizing access to the latest AI trends, tools, and insights for everyone — from freshers to founders.</p>
+
+    <div class="studio-card">
+      <div class="studio-founder">
+        <div class="founder-avatar">S</div>
+        <div>
+          <div class="founder-name">ISR Selvakumar</div>
+          <div class="founder-role">Founder & Head, ISR AI STUDIO</div>
+          <div class="founder-company">🏢 ISR VENTURES</div>
+        </div>
+      </div>
+      <p style="margin-top:18px;color:var(--text2);font-size:14px;line-height:1.8">
+        ISR Selvakumar is the visionary behind ISR VENTURES, driving innovation at the intersection of artificial intelligence and everyday utility. With ISR AI STUDIO, he aims to bridge the gap between complex AI advancements and practical, accessible knowledge for the next generation of AI practitioners and enthusiasts.
+      </p>
+    </div>
+
+    <h2>Our Mission</h2>
+    <p>ISR AI STUDIO exists to make cutting-edge AI knowledge accessible, actionable, and inspiring. We curate, generate, and visualize AI trends so that students, developers, designers, and entrepreneurs can make informed decisions about their AI journey.</p>
+
+    <h2>What We Offer</h2>
+    <p>From real-time AI news aggregation and role-based trend personalization to AI-generated insights and shareable branded content — ISR AI STUDIO is your complete AI intelligence companion.</p>
+
+    <h2>Our Platform Features</h2>
+    <p>✅ Top 10 curated AI trends updated daily<br>✅ AI-powered personalized trend generation<br>✅ Animated global AI trend map<br>✅ Role-based insights for Freshers and Developers<br>✅ Branded ISR trend cards with watermark<br>✅ One-click share, copy, and download<br>✅ Live Google News RSS feed<br>✅ Bookmark and save trends<br>✅ Dark/Light mode</p>
+
+    <h2>Part of ISR VENTURES</h2>
+    <p>ISR AI STUDIO is a proud wing of ISR VENTURES — a forward-thinking venture focused on building meaningful digital products that empower India's growing tech community. ISR VENTURES operates at the intersection of technology, education, and entrepreneurship.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: FOR WHOM
+════════════════════════════════════ -->
+<div class="page" id="page-forwhom">
+  <div class="static-page">
+    <div class="section-tag tag-green" style="margin-bottom:14px">BUILT FOR EVERYONE</div>
+    <h1>Who Is This <span class="text-grad">For?</span></h1>
+    <p class="lead">ISR AI STUDIO is designed for anyone who wants to stay ahead in the rapidly evolving world of Artificial Intelligence — regardless of their background or expertise level.</p>
+
+    <div class="for-whom-grid">
+      <div class="for-whom-card">
+        <div class="fw-icon">🎓</div>
+        <div class="fw-title">Freshers & Students</div>
+        <div class="fw-desc">Discover which AI skills are most in-demand before entering the workforce. Start your AI journey with confidence.</div>
+      </div>
+      <div class="for-whom-card">
+        <div class="fw-icon">💻</div>
+        <div class="fw-title">Developers</div>
+        <div class="fw-desc">Stay current with the latest AI frameworks, APIs, and tooling trends that are reshaping software development.</div>
+      </div>
+      <div class="for-whom-card">
+        <div class="fw-icon">🎨</div>
+        <div class="fw-title">Designers</div>
+        <div class="fw-desc">Understand how AI is transforming UX, creative tools, and design workflows to stay relevant and inspired.</div>
+      </div>
+      <div class="for-whom-card">
+        <div class="fw-icon">📈</div>
+        <div class="fw-title">Entrepreneurs</div>
+        <div class="fw-desc">Identify AI opportunities and market shifts early. Build smarter products with AI-first thinking.</div>
+      </div>
+      <div class="for-whom-card">
+        <div class="fw-icon">🧑‍💼</div>
+        <div class="fw-title">Professionals</div>
+        <div class="fw-desc">Learn how AI is disrupting your industry and how to leverage it for productivity and career growth.</div>
+      </div>
+      <div class="for-whom-card">
+        <div class="fw-icon">🔬</div>
+        <div class="fw-title">Researchers</div>
+        <div class="fw-desc">Track emerging AI research areas, breakthrough papers, and the latest academic and industry developments.</div>
+      </div>
+    </div>
+
+    <h2>Why ISR AI STUDIO?</h2>
+    <p>Unlike generic tech news platforms, ISR AI STUDIO is purpose-built for the AI-curious. We filter the noise, personalize the signal, and present AI trends in a way that is immediately useful and actionable — whether you're a first-year student or a seasoned CTO.</p>
+
+    <p>Every feature — from role-based trend filtering to AI-generated summaries — is designed with your specific journey in mind. This isn't just another news feed. It's your personal AI intelligence partner.</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+  PAGE: DISCLAIMER
+════════════════════════════════════ -->
+<div class="page" id="page-disclaimer">
+  <div class="static-page">
+    <div class="section-tag tag-pink" style="margin-bottom:14px">LEGAL & INFORMATION</div>
+    <h1>⚠️ Disclaimer</h1>
+    <p class="lead">Please read this disclaimer carefully before using ISR AI STUDIO. By accessing this platform, you agree to the terms outlined below.</p>
+
+    <div class="disclaimer-box">
+      <strong style="color:var(--c1)">Important:</strong> ISR AI STUDIO is an informational and educational platform. The content provided is for general knowledge and awareness purposes only and should not be construed as professional advice.
+    </div>
+
+    <h2>Content Accuracy</h2>
+    <p>The AI trend information, news, and generated content on this platform are curated from publicly available sources and AI-generated summaries. While we strive for accuracy, ISR AI STUDIO does not guarantee the completeness, accuracy, or timeliness of any information presented. AI trends and technology landscapes change rapidly, and information may become outdated.</p>
+
+    <h2>AI-Generated Content</h2>
+    <p>Some content on this platform is generated using AI language models. AI-generated content may contain inaccuracies, hallucinations, or outdated information. Users should independently verify any AI-generated insights before making professional, academic, or business decisions based on them.</p>
+
+    <h2>External News Sources</h2>
+    <p>Live news content is fetched from Google News RSS feeds and other third-party sources. ISR AI STUDIO is not responsible for the accuracy, content, or opinions expressed in external news articles. Links to external sites are provided for convenience only.</p>
+
+    <h2>No Professional Advice</h2>
+    <p>Information on this platform does not constitute financial, career, legal, or investment advice. Consult qualified professionals for specific guidance related to your situation.</p>
+
+    <h2>Intellectual Property</h2>
+    <p>The ISR AI STUDIO brand, ISR VENTURES name, and associated logos and watermarks are the intellectual property of ISR VENTURES. Content generated by users remains their own. AI-generated content is provided under fair use for educational purposes.</p>
+
+    <h2>Limitation of Liability</h2>
+    <p>ISR VENTURES and ISR AI STUDIO shall not be held liable for any direct, indirect, incidental, or consequential damages arising from the use of this platform or reliance on its content.</p>
+
+    <h2>Contact</h2>
+    <p>For questions regarding this disclaimer or the platform, please reach out to the ISR VENTURES team through official channels.</p>
+
+    <div class="disclaimer-box" style="margin-top:28px">
+      <strong>Last Updated:</strong> March 2026 · <strong>Platform:</strong> ISR AI STUDIO · <strong>Owner:</strong> ISR VENTURES, headed by ISR Selvakumar
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-logo">ISR AI STUDIO</div>
+  <div class="footer-sub">A wing of ISR VENTURES · Headed by ISR Selvakumar</div>
+  <div class="footer-links">
+    <span class="footer-link" onclick="goPage('studio')">About Studio</span>
+    <span class="footer-link" onclick="goPage('forwhom')">For Whom</span>
+    <span class="footer-link" onclick="goPage('disclaimer')">Disclaimer</span>
+    <span class="footer-link" onclick="goPage('news')">Live News</span>
+  </div>
+  <div class="footer-copy">© 2026 ISR VENTURES. All rights reserved. · ISR AI STUDIO</div>
+</footer>
+
+<!-- BOTTOM NAV (mobile) -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-btn active" onclick="goPage('home')"><span class="bnav-icon">🏠</span>Home</button>
+    <button class="bnav-btn" onclick="goPage('trends')"><span class="bnav-icon">📊</span>Trends</button>
+    <button class="bnav-btn" onclick="goPage('generate')"><span class="bnav-icon">✨</span>Generate</button>
+    <button class="bnav-btn" onclick="goPage('roles')"><span class="bnav-icon">🎯</span>For You</button>
+    <button class="bnav-btn" onclick="goPage('bookmarks')"><span class="bnav-icon">🔖</span>Saved</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   DATA
+══════════════════════════════════════════════ */
+const ALL_TRENDS = [
+  { id:1, name:"Agentic AI & Autonomous Agents", heat:98, category:"Infrastructure", desc:"AI systems that plan, reason, and execute multi-step tasks without human input. Tools like AutoGPT, LangGraph, and Claude's computer use are leading this wave.", color:"#ff6b6b" },
+  { id:2, name:"Multimodal AI Models", heat:95, category:"Foundation Models", desc:"Models like GPT-4o and Gemini Ultra process text, image, audio, and video simultaneously — enabling richer, more human-like AI interactions.", color:"#4d96ff" },
+  { id:3, name:"Small Language Models (SLMs)", heat:91, category:"Efficiency", desc:"Lightweight, efficient models like Phi-3, Mistral 7B, and Llama 3 running on-device. Perfect for edge AI, privacy-first apps, and cost reduction.", color:"#6bcb77" },
+  { id:4, name:"AI in Code Generation & DevOps", heat:89, category:"Developer Tools", desc:"GitHub Copilot, Cursor, Devin, and similar tools are transforming software development. AI now writes, reviews, tests, and deploys code autonomously.", color:"#c77dff" },
+  { id:5, name:"Retrieval-Augmented Generation (RAG)", heat:87, category:"Enterprise AI", desc:"Combining LLMs with real-time data retrieval to ground AI responses in factual, up-to-date knowledge. The backbone of enterprise AI deployments.", color:"#ffd93d" },
+  { id:6, name:"AI Safety & Alignment Research", heat:84, category:"Research", desc:"Constitutional AI, RLHF, and interpretability research are critical as AI systems grow more powerful. Anthropic, DeepMind, and OpenAI are racing to solve alignment.", color:"#ff9a3c" },
+  { id:7, name:"Vernacular & Regional Language AI", heat:81, category:"Accessibility", desc:"AI models supporting Hindi, Tamil, Telugu, Bengali, and 20+ Indian languages. India-specific AI like Krutrim and Sarvam are pioneering this space.", color:"#00f5d4" },
+  { id:8, name:"AI-Generated Media & Deepfakes", heat:79, category:"Creative AI", desc:"Sora, Runway, ElevenLabs, and HeyGen are enabling anyone to generate hyper-realistic video, audio, and synthetic media at scale.", color:"#ff6b6b" },
+  { id:9, name:"Edge AI & On-Device Intelligence", heat:76, category:"Hardware", desc:"AI chips like Apple's M4, Qualcomm Snapdragon X, and NVIDIA Jetson enable powerful AI inference on phones, wearables, and IoT devices.", color:"#4d96ff" },
+  { id:10, name:"AI Regulation & Governance", heat:73, category:"Policy", desc:"The EU AI Act, India's DPDP Act, and global AI governance frameworks are reshaping how companies build and deploy AI products.", color:"#c77dff" },
+];
+
+const FRESHER_TRENDS = [
+  { name:"Prompt Engineering", icon:"🧠", num:1, color:"#ff6b6b", desc:"Master the art of crafting effective prompts for LLMs. This is the most in-demand, beginner-friendly AI skill in 2025 — no coding required to start." },
+  { name:"AI-Assisted Coding (GitHub Copilot)", icon:"💡", num:2, color:"#4d96ff", desc:"Learn to use AI coding assistants early. Freshers who can co-pilot with AI ship 2× faster and stand out in interviews." },
+  { name:"RAG Basics & Vector Databases", icon:"🔍", num:3, color:"#6bcb77", desc:"Understanding how AI retrieves and cites knowledge is essential for any AI-related role. Start with LlamaIndex or LangChain fundamentals." },
+];
+
+const DEV_TRENDS = [
+  { name:"LLM Fine-Tuning & LoRA", icon:"⚙️", num:1, color:"#c77dff", desc:"Fine-tune open-source models like Llama 3 or Mistral on custom datasets using LoRA/QLoRA. Critical skill for production AI engineers." },
+  { name:"Agentic Frameworks (LangGraph, CrewAI)", icon:"🤖", num:2, color:"#ffd93d", desc:"Build multi-agent systems that can autonomously execute workflows. LangGraph and CrewAI are becoming the standard for production agents." },
+  { name:"AI Observability & MLOps", icon:"📊", num:3, color:"#ff9a3c", desc:"Tools like Langfuse, Helicone, and Weights & Biases help you monitor, debug, and optimize LLM-powered applications at scale." },
+];
+
+const CARD_GRADIENTS = [
+  ["#ff6b6b","#ffd93d"],
+  ["#4d96ff","#c77dff"],
+  ["#6bcb77","#00f5d4"],
+];
+
+const MAP_NODES = [
+  { x:0.18, y:0.35, color:"#ff6b6b", label:"GenAI Boom", region:"USA", size:18 },
+  { x:0.22, y:0.55, color:"#ff6b6b", label:"AI Startups", region:"LatAm", size:10 },
+  { x:0.46, y:0.28, color:"#4d96ff", label:"EU AI Act", region:"Europe", size:16 },
+  { x:0.50, y:0.32, color:"#4d96ff", label:"AI Ethics", region:"UK", size:13 },
+  { x:0.60, y:0.42, color:"#ffd93d", label:"AI for All", region:"India", size:17 },
+  { x:0.63, y:0.38, color:"#ffd93d", label:"Vernacular AI", region:"South Asia", size:12 },
+  { x:0.75, y:0.35, color:"#6bcb77", label:"Industrial AI", region:"China", size:18 },
+  { x:0.78, y:0.42, color:"#6bcb77", label:"Robotics AI", region:"Japan", size:13 },
+  { x:0.72, y:0.42, color:"#6bcb77", label:"K-AI", region:"Korea", size:11 },
+  { x:0.55, y:0.37, color:"#c77dff", label:"AI Infra", region:"Gulf", size:12 },
+  { x:0.52, y:0.22, color:"#c77dff", label:"Sovereign AI", region:"Mid East", size:10 },
+];
+
+const MAP_INSIGHTS = [
+  { region:"🇺🇸 Americas", color:"#ff6b6b", trend:"Generative AI", detail:"Leading in foundation models, AI startups, and venture funding." },
+  { region:"🇪🇺 Europe", color:"#4d96ff", trend:"AI Regulation", detail:"EU AI Act setting global governance standards. Ethical AI focus." },
+  { region:"🇮🇳 India", color:"#ffd93d", trend:"AI for All", detail:"Vernacular LLMs, ONDC-AI, and government AI initiatives surging." },
+  { region:"🇨🇳 Asia Pacific", color:"#6bcb77", trend:"Industrial AI", detail:"Manufacturing automation, robotics, and AI hardware dominance." },
+  { region:"🕌 Middle East", color:"#c77dff", trend:"AI Infrastructure", detail:"Massive sovereign AI investments and GPU cloud buildouts." },
+];
+
+let bookmarks = JSON.parse(localStorage.getItem('isr_bookmarks')||'[]');
+let currentTone = 'Beginner';
+let mapAnimId;
+let mapPhase = 0;
+
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase().includes(id) || b.getAttribute('onclick')?.includes("'"+id+"'"));
+  });
+  document.querySelectorAll('.bnav-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('onclick')?.includes("'"+id+"'"));
+  });
+  // page-specific init
+  if(id==='map') initMap();
+  if(id==='news') loadNews();
+  if(id==='bookmarks') renderBookmarks();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ══════════════════════════════════════════════
+   THEME
+══════════════════════════════════════════════ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme', isDark?'light':'dark');
+  document.getElementById('themeBtn').textContent = isDark?'🌙':'☀️';
+  toast(isDark?'☀️ Light mode on':'🌙 Dark mode on');
+}
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ══════════════════════════════════════════════
+   BOOKMARKS
+══════════════════════════════════════════════ */
+function toggleBookmark(id) {
+  const trend = ALL_TRENDS.find(t=>t.id===id);
+  if(!trend) return;
+  const idx = bookmarks.findIndex(b=>b.id===id);
+  if(idx>=0) {
+    bookmarks.splice(idx,1);
+    toast('🔖 Removed from saved');
+  } else {
+    bookmarks.push(trend);
+    toast('✅ Saved to bookmarks!');
+  }
+  localStorage.setItem('isr_bookmarks',JSON.stringify(bookmarks));
+  renderAll();
+}
+function isBookmarked(id) { return bookmarks.some(b=>b.id===id); }
+
+/* ══════════════════════════════════════════════
+   COPY
+══════════════════════════════════════════════ */
+function copyContent(elId) {
+  const el = document.getElementById(elId);
+  const text = el ? el.innerText || el.textContent : '';
+  navigator.clipboard.writeText(text).then(()=>toast('📋 Copied to clipboard!'));
+}
+function copyBookmarks() {
+  const text = bookmarks.map(b=>`${b.id}. ${b.name} (Heat: ${b.heat})\n${b.desc}`).join('\n\n');
+  navigator.clipboard.writeText(text||'No bookmarks yet').then(()=>toast('📋 Bookmarks copied!'));
+}
+
+/* ══════════════════════════════════════════════
+   SHARE
+══════════════════════════════════════════════ */
+function shareTo(platform, title) {
+  const text = encodeURIComponent(`${title} — Powered by ISR AI STUDIO (ISR VENTURES) 🚀 #AITrends #ISRAI`);
+  const url = encodeURIComponent(window.location.href);
+  const links = {
+    whatsapp: `https://wa.me/?text=${text}`,
+    twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+  };
+  window.open(links[platform], '_blank');
+}
+function shareGenResult() {
+  const text = document.getElementById('genOutput').innerText;
+  shareTo('whatsapp', text.substring(0,200)+'...');
+}
+function shareBookmarks() {
+  const text = encodeURIComponent('My saved AI trends from ISR AI STUDIO 🔖 #AITrends');
+  window.open(`https://wa.me/?text=${text}`, '_blank');
+}
+
+/* ══════════════════════════════════════════════
+   DOWNLOAD
+══════════════════════════════════════════════ */
+function downloadTxt(elId, fname) {
+  const text = document.getElementById(elId)?.innerText || '';
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname+'.txt'; a.click();
+  toast('⬇️ Downloaded!');
+}
+function downloadBookmarks() {
+  const text = '=== ISR AI STUDIO — My Saved Trends ===\n\n' +
+    bookmarks.map(b=>`${b.id}. ${b.name}\nHeat Score: ${b.heat}/100\nCategory: ${b.category}\n${b.desc}`).join('\n\n---\n\n') +
+    '\n\n© ISR AI STUDIO — ISR VENTURES';
+  const blob = new Blob([text],{type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'isr-saved-trends.txt'; a.click();
+  toast('⬇️ Bookmarks downloaded!');
+}
+function downloadAllCards() {
+  toast('📥 Preparing cards… (use browser print for full export)');
+  window.print();
+}
+
+/* ══════════════════════════════════════════════
+   RENDER TREND ITEM
+══════════════════════════════════════════════ */
+function renderTrendItem(t, showCopy=true) {
+  const bookmarked = isBookmarked(t.id);
+  const heatW = Math.round((t.heat/100)*120);
+  return `
+    <div class="trend-item" id="ti-${t.id}">
+      <div class="trend-rank">${String(t.id).padStart(2,'0')}</div>
+      <div class="trend-info">
+        <div class="trend-name">${t.name}</div>
+        <div class="trend-meta">
+          <span class="section-tag" style="background:${t.color}22;color:${t.color}">${t.category}</span>
+          <span style="display:flex;align-items:center;gap:5px">
+            🔥 <div class="heat-bar" style="width:${heatW}px"></div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">${t.heat}</span>
+          </span>
+        </div>
+        <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.7">${t.desc}</div>
+      </div>
+      <div class="trend-actions">
+        ${showCopy?`<button class="act-btn" onclick="navigator.clipboard.writeText('${t.name.replace(/'/g,"\\'")}');toast('📋 Copied!')" title="Copy">📋</button>`:''}
+        <button class="act-btn ${bookmarked?'bookmarked':''}" onclick="toggleBookmark(${t.id})" title="Bookmark">${bookmarked?'🔖':'🏷️'}</button>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   HOME TREND LIST (top 5)
+══════════════════════════════════════════════ */
+function renderHome() {
+  const el = document.getElementById('homeTrendList');
+  el.innerHTML = ALL_TRENDS.slice(0,5).map(t=>renderTrendItem(t)).join('');
+}
+
+/* ══════════════════════════════════════════════
+   FULL TREND LIST
+══════════════════════════════════════════════ */
+function renderFullTrends(data) {
+  const el = document.getElementById('fullTrendList');
+  el.innerHTML = data.map(t=>renderTrendItem(t)).join('');
+  const copy = document.getElementById('trendListCopy');
+  copy.textContent = 'Top 10 AI Trends — ISR AI STUDIO\n\n' +
+    data.map(t=>`${t.id}. ${t.name} (Heat: ${t.heat})\n${t.desc}`).join('\n\n') +
+    '\n\n© ISR AI STUDIO — ISR VENTURES';
+}
+
+function filterTrends() {
+  const q = document.getElementById('trendSearch').value.toLowerCase();
+  const filtered = q ? ALL_TRENDS.filter(t=>t.name.toLowerCase().includes(q)||t.desc.toLowerCase().includes(q)||t.category.toLowerCase().includes(q)) : ALL_TRENDS;
+  renderFullTrends(filtered);
+}
+
+/* ══════════════════════════════════════════════
+   ROLE CARDS
+══════════════════════════════════════════════ */
+function renderRoles() {
+  const el = document.getElementById('roleGrid');
+  el.innerHTML = `
+    <div class="role-card">
+      <div class="role-card-head">
+        <div class="role-icon" style="background:linear-gradient(135deg,#ff6b6b22,#ffd93d22);font-size:24px">🎓</div>
+        <div>
+          <div class="role-title">Freshers</div>
+          <div class="role-sub">Just starting your AI journey</div>
+        </div>
+      </div>
+      ${FRESHER_TRENDS.map(t=>`
+        <div class="role-trend-item">
+          <div class="role-num" style="background:${t.color}22;color:${t.color}">${t.num}</div>
+          <div>
+            <div class="role-trend-name">${t.icon} ${t.name}</div>
+            <div class="role-trend-desc">${t.desc}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="role-card">
+      <div class="role-card-head">
+        <div class="role-icon" style="background:linear-gradient(135deg,#4d96ff22,#c77dff22);font-size:24px">💻</div>
+        <div>
+          <div class="role-title">Developers</div>
+          <div class="role-sub">Building with AI</div>
+        </div>
+      </div>
+      ${DEV_TRENDS.map(t=>`
+        <div class="role-trend-item">
+          <div class="role-num" style="background:${t.color}22;color:${t.color}">${t.num}</div>
+          <div>
+            <div class="role-trend-name">${t.icon} ${t.name}</div>
+            <div class="role-trend-desc">${t.desc}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   TREND CARDS WITH CANVAS IMAGES
+══════════════════════════════════════════════ */
+function renderTrendCards() {
+  const top3 = ALL_TRENDS.slice(0,3);
+  const el = document.getElementById('trendCardsGrid');
+  const copy = document.getElementById('cardsCopy');
+  el.innerHTML = '';
+  copy.textContent = 'Top 3 AI Trend Cards — ISR AI STUDIO\n\n' +
+    top3.map(t=>`${t.id}. ${t.name}\n${t.desc}`).join('\n\n') +
+    '\n\n© ISR AI STUDIO — ISR VENTURES';
+
+  top3.forEach((t,i)=>{
+    const div = document.createElement('div');
+    div.className = 'trend-img-card';
+    div.innerHTML = `
+      <div class="card-img-wrap">
+        <canvas id="tcard-${i}" width="400" height="180"></canvas>
+        <div class="card-watermark">ISR AI STUDIO</div>
+      </div>
+      <div class="card-body">
+        <div class="section-tag" style="background:${t.color}22;color:${t.color};margin-bottom:8px">#${t.id} ${t.category}</div>
+        <div class="card-title-text">${t.name}</div>
+        <div class="card-desc">${t.desc}</div>
+        <div class="card-actions">
+          <button class="share-chip chip-wa btn-sm" onclick="shareTo('whatsapp','${t.name.replace(/'/g,"\\'")} — ISR AI STUDIO')">💬 Share</button>
+          <button class="share-chip chip-dl btn-sm" onclick="downloadCard(${i})">⬇️ Download</button>
+          <button class="share-chip chip-cp btn-sm" onclick="navigator.clipboard.writeText('${t.name.replace(/'/g,"\\'")}: ${t.desc.substring(0,80).replace(/'/g,"\\'")}...');toast('📋 Copied!')">📋 Copy</button>
+        </div>
+      </div>`;
+    el.appendChild(div);
+    setTimeout(()=>drawCardCanvas(i, t, CARD_GRADIENTS[i]),100);
+  });
+}
+
+function drawCardCanvas(i, trend, colors) {
+  const canvas = document.getElementById('tcard-'+i);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  // Gradient bg
+  const grd = ctx.createLinearGradient(0,0,W,H);
+  grd.addColorStop(0, colors[0]+'dd'); grd.addColorStop(1, colors[1]+'dd');
+  ctx.fillStyle = grd; ctx.fillRect(0,0,W,H);
+  // Decorative circles
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  ctx.beginPath(); ctx.arc(W*0.85,H*0.2,90,0,Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
+  ctx.beginPath(); ctx.arc(W*0.1,H*0.8,60,0,Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
+  ctx.restore();
+  // Rank
+  ctx.font = 'bold 64px Syne, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillText('#'+trend.id, W-90, H-10);
+  // Category tag
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.roundRect(16,14,trend.category.length*9+16,26,6); ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = '600 11px Plus Jakarta Sans, sans-serif';
+  ctx.fillText(trend.category.toUpperCase(), 24, 31);
+  // Trend name
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 20px Syne, sans-serif';
+  const words = trend.name.split(' '); let line=''; let y=78;
+  words.forEach(w=>{
+    const test = line+w+' ';
+    if(ctx.measureText(test).width > W-32) { ctx.fillText(line,16,y); line=w+' '; y+=28; }
+    else line=test;
+  });
+  ctx.fillText(line,16,y);
+  // ISR watermark area
+  ctx.fillStyle = 'rgba(0,0,0,0.4)';
+  ctx.fillRect(0,H-32,W,32);
+  ctx.fillStyle='rgba(255,255,255,0.7)';
+  ctx.font='600 10px Syne,sans-serif';
+  ctx.fillText('ISR AI STUDIO  ·  ISR VENTURES  ·  © 2026', 16, H-13);
+  // Heat score
+  ctx.fillStyle='rgba(255,255,255,0.9)';
+  ctx.font='bold 13px JetBrains Mono, monospace';
+  ctx.fillText('🔥 '+trend.heat, W-70, H-13);
+}
+
+function downloadCard(i) {
+  const canvas = document.getElementById('tcard-'+i);
+  if(!canvas) return;
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `isr-ai-trend-${i+1}.png`; a.click();
+  toast('🖼️ Card downloaded!');
+}
+
+/* ══════════════════════════════════════════════
+   GENERATE TRENDS (Claude API)
+══════════════════════════════════════════════ */
+document.querySelectorAll('.gen-opt').forEach(btn=>{
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.gen-opt').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    currentTone = this.dataset.tone;
+  });
+});
+
+async function generateTrend() {
+  const input = document.getElementById('genInput').value.trim();
+  if(!input) { toast('⚠️ Please enter a topic first!'); return; }
+  const result = document.getElementById('genResult');
+  const output = document.getElementById('genOutput');
+  result.classList.add('show');
+  output.innerHTML = '<div class="spinner"></div>';
+
+  const toneMap = {
+    Beginner: 'simple, beginner-friendly language with practical tips',
+    Developer: 'technical depth, code examples or tool names, developer-focused insights',
+    Expert: 'advanced insights, research-level depth, and nuanced analysis',
+    Tweet: 'as concise tweet-sized bullet points, each under 280 characters with emojis',
+    Blog: 'a structured blog-style article with an intro, sections, and conclusion',
+  };
+
+  const prompt = `You are ISR AI STUDIO's AI trend analyst — a wing of ISR VENTURES.
+
+The user wants to know: "${input}"
+
+Generate an engaging, informative AI trend report in ${toneMap[currentTone]||toneMap.Beginner}.
+
+Format your response with:
+- A catchy title
+- 3-5 key AI trends relevant to the query
+- For each trend: name, why it matters, and one actionable tip
+- A closing note branded as "ISR AI STUDIO — ISR VENTURES"
+
+Keep it motivating, accurate, and practical.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(c=>c.text||'').join('') || 'No response received.';
+    output.innerHTML = '';
+    output.textContent = '';
+    typewriter(output, text);
+  } catch(e) {
+    output.textContent = '⚠️ Unable to reach AI service. Please try again.\n\nError: '+e.message;
+  }
+}
+
+function typewriter(el, text) {
+  el.textContent = '';
+  let i = 0;
+  el.classList.add('typing');
+  const iv = setInterval(()=>{
+    el.textContent += text[i];
+    i++;
+    if(i>=text.length){ clearInterval(iv); el.classList.remove('typing'); }
+  },12);
+}
+
+function clearGen() {
+  document.getElementById('genInput').value='';
+  document.getElementById('genResult').classList.remove('show');
+  document.getElementById('genOutput').textContent='';
+}
+
+/* ══════════════════════════════════════════════
+   MAP
+══════════════════════════════════════════════ */
+function initMap() {
+  const canvas = document.getElementById('mapCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // Set canvas dimensions
+  canvas.width = canvas.parentElement.offsetWidth || 800;
+  canvas.height = 380;
+
+  if(mapAnimId) cancelAnimationFrame(mapAnimId);
+
+  // Draw map insights
+  const insEl = document.getElementById('mapInsights');
+  insEl.innerHTML = MAP_INSIGHTS.map(m=>`
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;border-left:3px solid ${m.color}">
+      <div style="font-weight:700;font-size:13px;margin-bottom:4px">${m.region}</div>
+      <div style="font-size:11px;font-weight:700;color:${m.color};margin-bottom:4px">${m.trend}</div>
+      <div style="font-size:12px;color:var(--text2)">${m.detail}</div>
+    </div>`).join('');
+
+  function drawFrame() {
+    mapPhase += 0.012;
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    // Background
+    const bg = ctx.createLinearGradient(0,0,W,H);
+    const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+    bg.addColorStop(0, isDark?'#0d1a2e':'#e8f0ff');
+    bg.addColorStop(1, isDark?'#1a0d2e':'#f0e8ff');
+    ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+    // Grid lines
+    ctx.strokeStyle = isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)';
+    ctx.lineWidth=1;
+    for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+    // Connection lines between nodes
+    ctx.lineWidth=0.8;
+    MAP_NODES.forEach((a,ai)=>{
+      MAP_NODES.forEach((b,bi)=>{
+        if(bi<=ai) return;
+        const dist = Math.hypot((a.x-b.x)*W,(a.y-b.y)*H);
+        if(dist>W*0.35) return;
+        const alpha = 0.05 + 0.05*Math.sin(mapPhase+ai*0.5);
+        ctx.strokeStyle=`rgba(100,150,255,${alpha})`;
+        ctx.beginPath(); ctx.moveTo(a.x*W,a.y*H); ctx.lineTo(b.x*W,b.y*H); ctx.stroke();
+      });
+    });
+
+    // Nodes
+    MAP_NODES.forEach((n,i)=>{
+      const x=n.x*W, y=n.y*H;
+      const pulse = n.size + 4*Math.sin(mapPhase*1.5+i*0.8);
+      // Glow ring
+      const ringGrad = ctx.createRadialGradient(x,y,0,x,y,pulse*2.5);
+      ringGrad.addColorStop(0,n.color+'44');
+      ringGrad.addColorStop(1,n.color+'00');
+      ctx.beginPath(); ctx.arc(x,y,pulse*2.5,0,Math.PI*2);
+      ctx.fillStyle=ringGrad; ctx.fill();
+      // Node circle
+      ctx.beginPath(); ctx.arc(x,y,pulse,0,Math.PI*2);
+      ctx.fillStyle=n.color+'cc'; ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1.5;
+      ctx.stroke();
+      // Label
+      ctx.fillStyle=isDark?'rgba(255,255,255,0.9)':'rgba(0,0,0,0.8)';
+      ctx.font='bold 11px Plus Jakarta Sans,sans-serif';
+      ctx.fillText(n.label, x+pulse+4, y+4);
+    });
+
+    // Title overlay
+    ctx.fillStyle=isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.05)';
+    ctx.font='bold 80px Syne,sans-serif';
+    ctx.fillText('AI MAP',10,H-14);
+
+    mapAnimId = requestAnimationFrame(drawFrame);
+  }
+  drawFrame();
+}
+
+/* ══════════════════════════════════════════════
+   NEWS (RSS via allorigins proxy)
+══════════════════════════════════════════════ */
+async function loadNews() {
+  const el = document.getElementById('newsContainer');
+  el.innerHTML = '<div class="spinner"></div>';
+  const rss = 'https://news.google.com/rss/search?q=Artificial+Intelligence+tips+when:24h&hl=en-IN&gl=IN&ceid=IN:en';
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(rss)}`;
+  try {
+    const res = await fetch(proxy);
+    if(!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(data.contents, 'text/xml');
+    const items = Array.from(xml.querySelectorAll('item')).slice(0,12);
+    if(!items.length) throw new Error('No items found');
+    const colors = ['#ff6b6b','#4d96ff','#6bcb77','#c77dff','#ffd93d','#ff9a3c','#00f5d4'];
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <div class="live-badge"><span class="dot"></span> Live Feed Active</div>
+        <div class="share-bar" style="margin:0;flex:1;padding:8px 14px">
+          <span class="share-bar-label">Share:</span>
+          <button class="share-chip chip-wa" onclick="shareTo('whatsapp','Latest AI News from ISR AI STUDIO')">💬 WhatsApp</button>
+          <button class="share-chip chip-tw" onclick="shareTo('twitter','Latest AI News')">🐦 Twitter</button>
+        </div>
+      </div>
+      <div class="news-grid">
+        ${items.map((item,i)=>{
+          const title = item.querySelector('title')?.textContent||'';
+          const link = item.querySelector('link')?.nextSibling?.textContent || item.querySelector('link')?.textContent||'#';
+          const pubDate = item.querySelector('pubDate')?.textContent||'';
+          const source = item.querySelector('source')?.textContent||'Google News';
+          const color = colors[i%colors.length];
+          return `<a href="${link}" target="_blank" rel="noopener">
+            <div class="news-item">
+              <div class="news-badge-dot" style="background:${color};box-shadow:0 0 8px ${color}88"></div>
+              <div class="news-content">
+                <div class="news-title">${title}</div>
+                <div class="news-meta">
+                  <span>${source}</span>
+                  <span>${pubDate ? new Date(pubDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : ''}</span>
+                  <span class="section-tag tag-pink" style="font-size:9px">🔴 LIVE</span>
+                </div>
+              </div>
+            </div>
+          </a>`;
+        }).join('')}
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `
+      <div class="news-error">
+        <div style="font-size:36px;margin-bottom:12px">📡</div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:8px">Live Feed Unavailable</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.7">Unable to fetch live news at this time.<br>Error: ${e.message}<br><br>
+        <button class="btn btn-primary btn-sm" onclick="loadNews()">🔄 Retry</button>
+        </div>
+      </div>`;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   BOOKMARKS RENDER
+══════════════════════════════════════════════ */
+function renderBookmarks() {
+  const el = document.getElementById('bookmarksList');
+  if(!bookmarks.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🔖</div>
+      <div class="empty-text">No bookmarks yet</div>
+      <div class="empty-sub">Tap the 🏷️ icon on any trend to save it here.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = bookmarks.map(t=>renderTrendItem(t)).join('');
+}
+
+/* ══════════════════════════════════════════════
+   TICKER
+══════════════════════════════════════════════ */
+function initTicker() {
+  const items = [
+    ...ALL_TRENDS.map(t=>`🔥 ${t.name} — Heat Score: ${t.heat}/100`),
+    '🚀 ISR AI STUDIO — Your AI Intelligence Partner',
+    '🏢 Powered by ISR VENTURES · Headed by ISR Selvakumar',
+    '✨ Generate personalized AI trends with Claude AI',
+    '📰 Live AI news updates every 24 hours',
+  ];
+  const doubled = [...items,...items]; // duplicate for seamless loop
+  const track = document.getElementById('tickerTrack');
+  track.innerHTML = doubled.map(i=>`<div class="ticker-item"><div class="ticker-dot"></div>${i}</div>`).join('');
+}
+
+/* ══════════════════════════════════════════════
+   RENDER ALL
+══════════════════════════════════════════════ */
+function renderAll() {
+  renderHome();
+  renderFullTrends(ALL_TRENDS);
+  renderRoles();
+  renderTrendCards();
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',()=>{
+  initTicker();
+  renderAll();
+});
+
+// Map resize
+window.addEventListener('resize', ()=>{
+  if(document.getElementById('page-map').classList.contains('active')) initMap();
+});
+</script>
+</body>
+</html>
